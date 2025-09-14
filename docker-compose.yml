@@ -1,0 +1,26 @@
+services:
+  dev:
+    build: .
+    container_name: java-dev-glassfish
+    # For remote use over the internet, ensure your firewall/router allows incoming traffic
+    # on these ports and consider using SSH tunneling or a TLS-terminating reverse proxy.
+    ports:
+      - "8080:8080"   # App HTTP (public)
+      - "4848:4848"   # GlassFish admin console (expose only on trusted networks)
+      - "2222:2222"   # SSH for remote development
+    environment:
+      # Change these values before exposing over the internet.
+      - DEV_USER=${DEV_USER:-dev}
+      - DEV_PASSWORD=${DEV_PASSWORD:-devpass}
+      - SSH_PORT=${SSH_PORT:-2222}
+    volumes:
+      - ./:/workspace
+    working_dir: /workspace
+    # Start runtime-prepared sshd in background then GlassFish. Logs are tailed to keep the container running.
+    command: bash -lc "bash .devcontainer/scripts/run-sshd.sh & bash .devcontainer/scripts/start-glassfish.sh && tail -f /opt/glassfish5/glassfish/domains/domain1/logs/server.log"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s

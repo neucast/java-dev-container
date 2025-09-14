@@ -1,0 +1,10 @@
+# Ignore build artifacts and VCS data when building Docker image
+.git
+.gitignore
+.idea
+.vscode
+.target
+**/target
+node_modules
+.DS_Store
+.env
